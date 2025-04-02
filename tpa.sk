@@ -1,0 +1,76 @@
+
+# Created by: [mr piepmatzt]
+
+options:
+  teleport-countdown: 5 # Seconds before teleportation
+  cooldown: 10 # Cooldown between requests
+  max-teleport-distance: -1 # Unlimited (-1) or set max distance
+  tpa-timeout: 30 # Time before a TPA request expires
+
+command /tpa <player>:
+  cooldown: {@cooldown} seconds
+  cooldown message: "&7Tᴇʟᴇᴘᴏʀᴛɪɴɢ ɪs ᴏɴ cᴏᴏʟᴅᴏᴡɴ."
+  trigger:
+    if arg-1 is online:
+      send actionbar "&7Yᴏᴜ sᴇɴᴛ ᴀ TPA ʀᴇǫᴜᴇsᴛ ᴛᴏ &f%arg-1%&7!" to player
+      send actionbar "<#0080ff>%player% &7wᴀɴᴛs ᴛᴏ ᴛᴇʟᴇᴘᴏʀᴛ ᴛᴏ yᴏᴜ! ᴀᴄᴄᴇᴘᴛ wɪᴛʜ <#0080ff>/tpaccept" to arg-1
+      play sound "entity.player.levelup" to player
+      play sound "entity.player.levelup" to arg-1
+      set {tpa::%arg-1%} to player
+      wait {@tpa-timeout} seconds
+      if {tpa::%arg-1%} is set:
+        delete {tpa::%arg-1%}
+    else:
+      send "&cTʜɪs pʟᴀʏᴇʀ ɪs ɴᴏᴛ ᴏɴʟɪɴᴇ!" to player
+
+command /tpahere <player>:
+  cooldown: {@cooldown} seconds
+  cooldown message: "&7Tᴇʟᴇᴘᴏʀᴛɪɴɢ ɪs ᴏɴ cᴏᴏʟᴅᴏᴡɴ."
+  trigger:
+    if arg-1 is online:
+      send actionbar "&7Yᴏᴜ ʀᴇǫᴜᴇsᴛᴇᴅ &f%arg-1%&7 ᴛᴏ ᴛᴇʟᴇᴘᴏʀᴛ ᴛᴏ yᴏᴜ!" to player
+      send actionbar "<#0080ff>%player% &7ʜᴀs ʀᴇǫᴜᴇsᴛᴇᴅ yᴏᴜ ᴛᴏ ᴛᴇʟᴇᴘᴏʀᴛ ᴛᴏ ᴛʜᴇᴍ! ᴀᴄᴄᴇᴘᴛ wɪᴛʜ <#0080ff>/tpaccept" to arg-1
+      play sound "entity.player.levelup" to player
+      play sound "entity.player.levelup" to arg-1
+      set {tpahere::%arg-1%} to player
+      wait {@tpa-timeout} seconds
+      if {tpahere::%arg-1%} is set:
+        delete {tpahere::%arg-1%}
+    else:
+      send "&cTʜɪs pʟᴀʏᴇʀ ɪs ɴᴏᴛ ᴏɴʟɪɴᴇ!" to player
+
+command /tpaccept:
+  trigger:
+    if {tpa::%player%} is set:
+      send actionbar "&7Tᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f5&7 sᴇᴄᴏɴᴅs..." to {tpa::%player%}
+      play sound "entity.player.levelup" to {tpa::%player%} # Play level-up sound when accepting teleport
+      loop {@teleport-countdown} times:
+        send actionbar "&7Tᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f%{@teleport-countdown} - loop-number + 1%&7 sᴇᴄᴏɴᴅs..." to {tpa::%player%}
+        play sound "entity.experience_orb.pickup" to {tpa::%player%}
+        wait 1 second
+      teleport {tpa::%player%} to player
+      send "&7Tᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ sᴜᴄᴄᴇssғᴜʟ!" to {tpa::%player%}
+      delete {tpa::%player%}
+    else if {tpahere::%player%} is set:
+      send actionbar "&7Tᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f5&7 sᴇᴄᴏɴᴅs..." to player
+      play sound "entity.player.levelup" to player # Level-up sound when accepting teleport
+      loop {@teleport-countdown} times:
+        send actionbar "&7Tᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &f%{@teleport-countdown} - loop-number + 1%&7 sᴇᴄᴏɴᴅs..." to player
+        play sound "entity.experience_orb.pickup" to player
+        wait 1 second
+      teleport player to {tpahere::%player%}
+      send "&7Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ!" to player
+      delete {tpahere::%player%}
+    else:
+      send "&cYᴏᴜ ʜᴀᴠᴇ ɴᴏ pᴇɴᴅɪɴɢ TPA ʀᴇǫᴜᴇsᴛs!" to player
+
+command /tpdeny:
+  trigger:
+    if {tpa::%player%} is set:
+      send "&cYᴏᴜ ʀᴇᴊᴇᴄᴛᴇᴅ ᴛʜᴇ TPA ʀᴇǫᴜᴇsᴛ fʀᴏᴍ <#0080ff>%{tpa::%player%}%&c." to player
+      delete {tpa::%player%}
+    else if {tpahere::%player%} is set:
+      send "&cYᴏᴜ ʀᴇᴊᴇᴄᴛᴇᴅ ᴛʜᴇ TPAHere ʀᴇǫᴜᴇsᴛ fʀᴏᴍ <#0080ff>%{tpahere::%player%}%&c." to player
+      delete {tpahere::%player%}
+    else:
+      send "&cYᴏᴜ ʜᴀᴠᴇ ɴᴏ ᴏᴘᴇɴ TPA ʀᴇǫᴜᴇsᴛs!" to player
